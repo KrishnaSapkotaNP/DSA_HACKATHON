@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BFS Maze Visualization</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f7fb;
+    padding: 25px;
+}
+#maze {
+    display: grid;
+    grid-template-columns: repeat(4, 65px);
+    gap: 6px;
+    justify-content: center;
+    margin: 25px auto;
+}
+.cell {
+    height: 65px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #cbd5e1;
+}
+.wall { background: #374151; color: white; }
+.start { background: #86efac; }
+.key { background: #fde68a; }
+.door { background: #93c5fd; }
+.exit { background: #f9a8d4; }
+.path { outline: 3px solid #ef4444; }
+button {
+    padding: 10px 18px;
+    margin: 5px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+#info {
+    margin: 20px auto;
+    max-width: 450px;
+    line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<h2>Shortest Path Using BFS</h2>
+<p>Maze: Find the shortest route from S to E</p>
+
+<div id="maze"></div>
+
+<h3 id="distance">Shortest distance: 6 moves</h3>
+<p id="info">Press Next Step to explore the route.</p>
+
+<button onclick="previous()">Previous</button>
+<button onclick="next()">Next Step</button>
+<button onclick="reset()">Reset</button>
+
+<script>
+const grid = [
+    "S..#",
+    "a..#",
+    "#..#",
+    "#.AE"
+].map(row => [...row]);
+
+// Coordinates are zero-based internally.
+const path = [
+    [0, 0], // S: (1,1)
+    [1, 0], // a: (2,1), collect key
+    [1, 1], // (2,2)
+    [1, 2], // (2,3)
+    [2, 2], // (3,3)
+    [3, 2], // A: (4,3), door unlocked
+    [3, 3]  // E: (4,4)
+];
+
+let step = 0;
+
+function render() {
+    const maze = document.getElementById("maze");
+    maze.replaceChildren();
+
+    grid.forEach((row, r) => {
+        row.forEach((value, c) => {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            if (value === "#") cell.classList.add("wall");
+            if (value === "S") cell.classList.add("start");
+            if (value === "a") cell.classList.add("key");
+            if (value === "A") cell.classList.add("door");
+            if (value === "E") cell.classList.add("exit");
+
+            const pathIndex = path.findIndex(
+                ([pr, pc]) => pr === r && pc === c
+            );
+
+            if (pathIndex !== -1 && pathIndex <= step) {
+                cell.classList.add("path");
+            }
+
+            cell.textContent = value;
+            maze.appendChild(cell);
+        });
+    });
+
+    const messages = [
+        "Start at S. Distance = 0.",
+        "Move down to key a. Distance = 1. Key collected!",
+        "Move right. Distance = 2.",
+        "Move right. Distance = 3.",
+        "Move down. Distance = 4.",
+        "Move down to door A. Distance = 5. Key a unlocks the door!",
+        "Move right to E. Distance = 6. Exit reached!"
+    ];
+
+    document.getElementById("info").textContent = messages[step];
+    document.getElementById("distance").textContent =
+        step === 6
+        ? "Shortest distance: 6 moves ✓"
+        : `Moves taken: ${step} / 6`;
+}
+
+function next() {
+    if (step < path.length - 1) {
+        step++;
+        render();
+    }
+}
+
+function previous() {
+    if (step > 0) {
+        step--;
+        render();
+    }
+}
+
+function reset() {
+    step = 0;
+    render();
+}
+
+render();
+</script>
+</body>
+</html>

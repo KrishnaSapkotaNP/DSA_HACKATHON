@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Budget Traveller Visualizer</title>
+</head>
+<body>
+    <h3>Budget Traveller with Coupons</h3>
+    <button onclick="runSimulation()">Run Simulation</button>
+    <div id="output" style="margin-top: 15px; font-family: monospace; white-space: pre-line;"></div>
+
+    <script>
+        function runSimulation() {
+            // Hardcoded input values based on your example
+            const N = 3;
+            const M = 3;
+            const K = 1;
+            const C = 1;
+            
+            // Flights: [u, v, price]
+            const flights = [
+                [1, 2, 100],
+                [2, 3, 100],
+                [1, 3, 300]
+            ];
+
+            let minCost = -1;
+            let bestPath = [];
+
+            function findPath(currentCity, currentCost, stops, couponsUsed, path) {
+                if (currentCity === N) {
+                    if (minCost === -1 || currentCost < minCost) {
+                        minCost = currentCost;
+                        bestPath = [...path];
+                    }
+                    return;
+                }
+
+                if (minCost !== -1 && currentCost >= minCost) {
+                    return;
+                }
+
+                for (let i = 0; i < M; i++) {
+                    let u = flights[i][0];
+                    let v = flights[i][1];
+                    let price = flights[i][2];
+
+                    if (u === currentCity) {
+                        if (stops + 1 <= K) {
+                            // Option 1: Without coupon
+                            path.push({to: v, price: price, coupon: false});
+                            findPath(v, currentCost + price, stops + 1, couponsUsed, path);
+                            path.pop();
+
+                            // Option 2: With coupon
+                            if (couponsUsed < C) {
+                                let discounted = Math.floor(price / 2);
+                                path.push({to: v, price: discounted, coupon: true});
+                                findPath(v, currentCost + discounted, stops + 1, couponsUsed + 1, path);
+                                path.pop();
+                            }
+                        }
+                    }
+                }
+            }
+
+            findPath(1, 0, 0, 0, [1]);
+
+            let resultText = `Input:\nN=${N}, M=${M}, K=${K}, C=${C}\nFlights: 1->2 (100), 2->3 (100), 1->3 (300)\n\n`;
+            resultText += `Minimum Cost: ${minCost}\n`;
+            resultText += `Best Path Sequence: ${JSON.stringify(bestPath)}`;
+
+            document.getElementById('output').innerText = resultText;
+        }
+    </script>
+</body>
+</html>
